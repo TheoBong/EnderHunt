@@ -1,0 +1,5 @@
+name: EnderHunt
+version: ${enderhunt.desc}
+api-version: 1.19
+author: Theo
+main: com.bongbong.enderhunt.HuntPlugin
