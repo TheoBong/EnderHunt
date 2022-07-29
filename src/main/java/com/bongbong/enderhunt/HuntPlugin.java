@@ -40,52 +40,10 @@ public final class HuntPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-        File data = new File(getDataFolder().getAbsolutePath() + File.separator + "data.json");
         origin = new Location(Bukkit.getWorlds().get(2), 0, Bukkit.getWorlds().get(2).getHighestBlockYAt(0, 0) + 1, 0);
 
         buffEffects.add(new PotionEffect(PotionEffectType.REGENERATION, 600, 0, false, false, false));
         buffEffects.add(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 600, 0, false, false, false));
-
-        if (!getDataFolder().exists()){
-            getDataFolder().mkdirs();
-        }
-
-        if (!data.exists()){
-            JsonObject base = new JsonObject();
-            base.add("state", new JsonPrimitive(EggState.BLOCK.toString()));
-            base.add("world", new JsonPrimitive(origin.getWorld().getName()));
-            JsonArray array = new JsonArray();
-            array.add(origin.getX());
-            array.add(origin.getY());
-            array.add(origin.getZ());
-            base.add("coordinates", array);
-            base.add("playerHolder",null);
-            try {
-                data.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(data));
-                writer.write(gson.toJson(base));
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        Reader reader = null;
-        try {
-            reader = Files.newBufferedReader(Paths.get(data.toURI()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        JsonObject jsonData = gson.fromJson(reader,JsonObject.class);
-
-        eggState = EggState.valueOf(jsonData.get("state").getAsString());
-        eggPos = new Location(Bukkit.getWorld(jsonData.get("world").getAsString()),jsonData.get("coordinates").getAsJsonArray().get(0).getAsDouble(), jsonData.get("coordinates").getAsJsonArray().get(1).getAsDouble(), jsonData.get("coordinates").getAsJsonArray().get(2).getAsDouble());
-        try {
-            playerHolder = UUID.fromString(jsonData.get("playerHolder").getAsString());
-        } catch (Exception e){
-            playerHolder = null;
-        }
 
         getServer().getPluginManager().registerEvents(this,this);
 
@@ -140,34 +98,6 @@ public final class HuntPlugin extends JavaPlugin implements Listener {
                 }
             }
         }, 0, 1);
-    }
-
-    @Override
-    public void onDisable() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-        File data = new File(getDataFolder().getAbsolutePath() + File.separator + "data.json");
-
-        JsonObject base = new JsonObject();
-        base.add("state", new JsonPrimitive(eggState.toString()));
-        base.add("world", new JsonPrimitive(eggPos.getWorld().getName()));
-        JsonArray array = new JsonArray();
-        array.add(eggPos.getX());
-        array.add(eggPos.getY());
-        array.add(eggPos.getZ());
-        base.add("coordinates", array);
-        if (playerHolder == null){
-            base.add("playerHolder", null);
-        }
-        else {
-            base.add("playerHolder", new JsonPrimitive(playerHolder.toString()));
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(data));
-            writer.write(gson.toJson(base));
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @EventHandler
